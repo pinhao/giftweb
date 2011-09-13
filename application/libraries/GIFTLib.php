@@ -126,19 +126,20 @@ class GIFTLib {
 			return array();
 		}
 		
-		$request = "<mrml session-id=\"$this->mSessionId\">".
-					"	<configure-session session-id=\"$this->mSessionId\">".
-					"		<algorithm algorithm-id=\"$algorithm['id']\"".
-					"		algorithm-type=\"$algorithm['type']\"".
-					"		collection-id=\"$collection\">".
+		$requestFormat = sprintf("<mrml session-id=\"%1$s\">".
+					"	<configure-session session-id=\"%1$s\">".
+					"		<algorithm algorithm-id=\"%2$s\"".
+					"		algorithm-type=\"%3$s\"".
+					"		collection-id=\"%4$d\">".
 					"		</algorithm>".
 					"	</configure-session>".
-					"	<query-step session-id=\"$this->mSessionId\"".
-					"		result-size=\"$resultSize\"".
-					"		algorithm-id=\"$algorithm['id']\"".
-					"		collection=\"$collection\"".
+					"	<query-step session-id=\"%1$s\"".
+					"		result-size=\"%5$d\"".
+					"		algorithm-id=\"%2$s\"".
+					"		collection=\"%6$s\"".
 					"	</query-step>"
 					"</mrml>";
+		$requestFormat = sprintf($format, $this->mSessionId, $algorithm['id'], $algorithm['type'], $collection, $resultSize, $collection);
 		$response = $this->request($request);
 		$mrml = new SimpleXMLElement($response);
 		var_dump($mrml);
