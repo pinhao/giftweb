@@ -12,6 +12,7 @@ class GIFTLib {
 	protected $mSessionId;
 	protected $mCollections;
 	protected $mAlgorithms;
+	protected $mAlgorithmsForCollection;
 		
 	private $sRequestTemplate;
 	
@@ -79,7 +80,8 @@ class GIFTLib {
 	}
 	
 	public function getAlgorithms($collection = '') {
-		if ( !isset($this->mAlgorithms) ) {
+		if ( !isset($this->mAlgorithms) ||  $this->mAlgorithmsForCollection != $collection ) {
+			$this->mAlgorithmsForCollection = $collection;
     		// gift ignores collection-id value bug?
         	$request = "<mrml><get-algorithms collection-id=\"$collection\"/></mrml>";
         	$response = $this->request($request);
@@ -111,11 +113,35 @@ class GIFTLib {
 		return $this->mSessionId;
 	}
 	
-	public function getImageSet($collection = '', $algorithm = '', $resultSize = 10, $uploadedFile = '') {
+	public function getImageSet($collection = '', $algorithm = NULL, $resultSize = 10, $uploadedFile = '') {
 		$this->getSessionId();
 		$this->getAlgorithms($collection);
 		
+		if ( $algorithm === NULL && isset($this->mAlgorithms[0]) )
+		{
+			$algorithm = $this->mAlgorithms[0];
+		}
+		else
+		{
+			return array();
+		}
 		
+		$request = "<mrml session-id=\"$this->mSessionId\">".
+					"	<configure-session session-id=\"$this->mSessionId\">".
+					"		<algorithm algorithm-id=\"$algorithm['id']\"".
+					"		algorithm-type=\"$algorithm['type']\"".
+					"		collection-id=\"$collection\">".
+					"		</algorithm>".
+					"	</configure-session>".
+					"	<query-step session-id=\"$this->mSessionId\"".
+					"		result-size=\"$resultSize\"".
+					"		algorithm-id=\"$algorithm['id']\"".
+					"		collection=\"$collection\"".
+					"	</query-step>"
+					"</mrml>";
+		$response = $this->request($request);
+		$mrml = new SimpleXMLElement($response);
+		var_dump($mrml);
 	}
 	
 }
