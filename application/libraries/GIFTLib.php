@@ -142,6 +142,7 @@ class GIFTLib {
 		$response = $this->request($request);
 		$mrml = new SimpleXMLElement($response);
 		var_dump($mrml);
+		return array();
 	}
 	
 }

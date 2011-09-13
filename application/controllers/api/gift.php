@@ -68,6 +68,16 @@ class gift extends REST_Controller {
 		}
 	}
 	
+	function images_get() {
+		$images = $this->GIFTLib->getImageSet();
+		if ( !empty($images) ) {
+			$response = $this->build_response('images', $images);
+			$this->response($response, 200);
+		} else {
+			$this->response(NULL, 400);
+		}				
+	}
+	
 	function sessionid_get() {
 		$this->response($this->GIFTLib->getSessionId(), 200);
 	}
