@@ -7,10 +7,12 @@ require APPPATH.'/libraries/GIFTLib.php';
 class gift extends REST_Controller {
 	
 	private $GIFTLib;
+	private $rootWebPath;
 	
 	function __construct() {
 		parent::__construct();
 		$this->GIFTLib = new GIFTLib("127.0.0.1", 12789, "anonymous");
+		$this->rootWebPath = rtrim(realpath('.'), '/').'/';
 	}
 	
 	/** api web methods **/
@@ -71,7 +73,8 @@ class gift extends REST_Controller {
 	function images_get() {
 		$images = $this->GIFTLib->getImageSet();
 		if ( !empty($images) ) {
-			$response = $this->build_response('images', $images);
+			$images = $this->translate_path_to_url($images);
+			$response = $this->build_response('image', $images);
 			$this->response($response, 200);
 		} else {
 			$this->response(NULL, 400);
@@ -83,6 +86,16 @@ class gift extends REST_Controller {
 	}
 	
 	/** internal methods **/
+	
+	private function translate_path_to_url($images) {
+		$baseurl = $this->config->item('base_url');
+		$filePathPatern = "#^(file:)?$this->rootWebPath#";
+		foreach($images as $k => $image) {
+			$images[$k]['image-location'] = preg_replace($filePathPatern, $baseurl, $image['image-location']);
+			$images[$k]['thumbnail-location'] = preg_replace($filePathPatern, $baseurl, $image['thumbnail-location']);
+		}
+		return $images;
+	}
 	
 	private function build_response($type, $items) {
 		$response = array();

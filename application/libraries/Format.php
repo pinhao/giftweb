@@ -202,7 +202,9 @@ class Format {
 	// Encode as JSON
 	public function to_json()
 	{
-		return json_encode($this->_data);
+		// Fix for bug https://bugs.php.net/bug.php?id=49366
+		//return json_encode($this->_data);
+		return str_replace('\\/', '/', json_encode($this->_data));
 	}
 
 	// Encode as Serialized array

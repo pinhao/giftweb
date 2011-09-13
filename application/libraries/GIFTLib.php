@@ -24,9 +24,8 @@ class GIFTLib {
 		$this->mUsername = $username;
 		$this->mSessionId = $sessionId;
 		
-		$this->sRequestHeader = "<?xml version=\"1.0\" encoding=\"UTF-8\" standalone=\"no\" ?>
-<!DOCTYPE mrml SYSTEM \"http://www.mrml.net/specification/v1_0/MRML_v10.dtd\">
-";
+		$this->sRequestHeader = '<?xml version="1.0" encoding="UTF-8" standalone="no" ?>'.
+								'<!DOCTYPE mrml SYSTEM "http://www.mrml.net/specification/v1_0/MRML_v10.dtd">';
 	}
 	
 	protected function connect() {
@@ -116,34 +115,39 @@ class GIFTLib {
 	public function getImageSet($collection = '', $algorithm = NULL, $resultSize = 10, $uploadedFile = '') {
 		$this->getSessionId();
 		$this->getAlgorithms($collection);
+		$this->getCollections();
 		
-		if ( $algorithm === NULL && isset($this->mAlgorithms[0]) )
-		{
-			$algorithm = $this->mAlgorithms[0];
-		}
-		else
-		{
+		// default to first collection
+		if ( $collection === '' && isset($this->mCollections[0]) ) {
+			$collection = $this->mCollections[0];
+		} else {
 			return array();
 		}
 		
-		$requestFormat = "<mrml session-id=\"%1$s\">".
-					"	<configure-session session-id=\"%1$s\">".
-					"		<algorithm algorithm-id=\"%2$s\"".
-					"		algorithm-type=\"%3$s\"".
-					"		collection-id=\"%4$d\">".
-					"		</algorithm>".
-					"	</configure-session>".
-					"	<query-step session-id=\"%1$s\"".
-					"		result-size=\"%5$d\"".
-					"		algorithm-id=\"%2$s\"".
-					"		collection=\"%6$s\"".
-					"	</query-step>".
-					"</mrml>";
-		$requestFormat = sprintf($format, $this->mSessionId, $algorithm['id'], $algorithm['type'], $collection, $resultSize, $collection);
+		//default to first algorithm
+		if ( $algorithm === NULL && isset($this->mAlgorithms[0]) ) {
+			$algorithm = $this->mAlgorithms[0];
+		} else {
+			return array();
+		}
+		
+		$requestFormat = '<mrml session-id="%1$s">'.
+					'<configure-session session-id="%1$s">'.
+					'<algorithm algorithm-id="%2$s" algorithm-type="%3$s" collection-id="%4$s"></algorithm>'.
+					'</configure-session>'.
+					'<query-step session-id="%1$s" result-size="%5$d" algorithm-id="%2$s" collection="%4$s"></query-step>'.
+					'</mrml>';
+		$request = sprintf($requestFormat, $this->mSessionId, $algorithm['id'], $algorithm['type'], $collection['id'], $resultSize);
 		$response = $this->request($request);
 		$mrml = new SimpleXMLElement($response);
-		var_dump($mrml);
-		return array();
+		$imageSet = array();
+    	foreach ($mrml->xpath('//query-result-element-list/query-result-element') as $image) {
+    		$similarity = (string)$image['calculated-similarity'];
+    		$location = (string)$image['image-location'];
+			$thumbnail = (string)$image['thumbnail-location'];
+    		$imageSet[] = array('calculated-similarity'=>$similarity, 'image-location'=>$location, 'thumbnail-location'=>$thumbnail);
+    	}		
+		return $imageSet;
 	}
 	
 }
