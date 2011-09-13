@@ -79,7 +79,7 @@ class GIFTLib {
 	}
 	
 	public function getAlgorithms($collection = '') {
-    	if ( !isset($this->mAlgorithms) ) {
+		if ( !isset($this->mAlgorithms) ) {
     		// gift ignores collection-id value bug?
         	$request = "<mrml><get-algorithms collection-id=\"$collection\"/></mrml>";
         	$response = $this->request($request);
@@ -88,7 +88,9 @@ class GIFTLib {
         	foreach ($mrml->xpath('//algorithm-list/algorithm') as $algorithm) {
         		$algorithmName = (string)$algorithm['algorithm-name'];
         		$algorithmId = (string)$algorithm['algorithm-id'];
-        		$this->mAlgorithms[] = array('id'=>$algorithmId, 'name'=>$algorithmName);
+				$algorithmType = (string)$algorithm['algorithm-type'];
+				$collectionId = (string)$algorithm['collection-id'];
+        		$this->mAlgorithms[] = array('collection'=>$collectionId, 'id'=>$algorithmId, 'name'=>$algorithmName, 'type'=>$algorithmType);
         	}
         }
         return $this->mAlgorithms;
@@ -107,6 +109,13 @@ class GIFTLib {
         		$this->mSessionId = (int)$session[0]['session-id'];
 		}
 		return $this->mSessionId;
+	}
+	
+	public function getImageSet($collection = '', $algorithm = '', $resultSize = 10, $uploadedFile = '') {
+		$this->getSessionId();
+		$this->getAlgorithms($collection);
+		
+		
 	}
 	
 }
