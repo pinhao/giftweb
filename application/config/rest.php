@@ -10,7 +10,7 @@
 |	Default: xml
 |
 */
-$config['rest_default_format'] = 'xml';
+$config['rest_default_format'] = 'json';
 
 /*
 |--------------------------------------------------------------------------
@@ -192,7 +192,7 @@ $config['rest_logs_table'] = 'logs';
 	) ENGINE=MyISAM DEFAULT CHARSET=utf8;
 |
 */
-$config['rest_enable_logging'] = FALSE;
+$config['rest_enable_logging'] = TRUE;
 
 /*
 |--------------------------------------------------------------------------
