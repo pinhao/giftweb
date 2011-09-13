@@ -126,7 +126,7 @@ class GIFTLib {
 			return array();
 		}
 		
-		$requestFormat = sprintf("<mrml session-id=\"%1$s\">".
+		$requestFormat = "<mrml session-id=\"%1$s\">".
 					"	<configure-session session-id=\"%1$s\">".
 					"		<algorithm algorithm-id=\"%2$s\"".
 					"		algorithm-type=\"%3$s\"".
@@ -137,7 +137,7 @@ class GIFTLib {
 					"		result-size=\"%5$d\"".
 					"		algorithm-id=\"%2$s\"".
 					"		collection=\"%6$s\"".
-					"	</query-step>"
+					"	</query-step>".
 					"</mrml>";
 		$requestFormat = sprintf($format, $this->mSessionId, $algorithm['id'], $algorithm['type'], $collection, $resultSize, $collection);
 		$response = $this->request($request);
