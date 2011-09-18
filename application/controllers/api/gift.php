@@ -60,10 +60,10 @@ class gift extends REST_Controller {
 		}
 		$collectionRandKey = array_rand($collections);
 		if ( $collectionRandKey === NULL ) {
-			$this->errorResponse('No collections on server');
+			$this->errorResponse(array(array('msg'=>'No collections on server')));
 		}
-		if ( ($count = $this->input->get_post('count')) !== FALSE ) {
-			$images = $this->GIFTLib->getImageSet($collections[$collectionRandKey], NULL, intval($count));
+		if ( ($count = $this->input->get('count')) !== FALSE ) {
+			$images = $this->GIFTLib->getImageSet($collections[$collectionRandKey], NULL, NULL, intval($count));
 		} else {
 			$images = $this->GIFTLib->getImageSet($collections[$collectionRandKey]);
 		}
@@ -73,6 +73,49 @@ class gift extends REST_Controller {
 		$images = $this->translate_path_to_url($images);
 		$response = $this->build_response('image', $images);
 		$this->response($response, 200);				
+	}
+	
+	function similar_images_post() {
+		$uploadConfig = array();
+		$uploadConfig['upload_path'] = $this->rootWebPath.'static/uploads/';
+		$uploadConfig['allowed_types'] = 'jpg|jpeg';
+		$uploadConfig['encrypt_name'] = TRUE;
+		$this->load->library('upload', $uploadConfig);
+		if ( $this->upload->do_upload() === FALSE ) {
+			$this->errorResponse(array(array('msg'=>$this->upload->display_errors('',''))));
+		}
+		// upload file comes in userfile field encoded in multipart/form-data 
+		$uploadData = $this->upload->data();
+		if ( empty($uploadData) ) {
+			$this->errorResponse(array(array('msg'=>'File upload error')));
+		}
+		if ( $uploadData['file_type'] != 'image/jpeg' || $uploadData['is_image'] === 0 ) {
+			$this->errorResponse(array(array('msg'=>'Image File invalid')));
+			if ( is_file($uploadData['full_path']) === TRUE ) {
+				unlink($uploadData['full_path']);
+			}
+		}
+		$this->validateSessionId();
+		$collections = $this->GIFTLib->getCollections();
+		if ( $collections === FALSE ) {
+			$this->errorResponse($this->GIFTLib->getLastErrors());
+		}
+		if ( empty($collections) ) {
+			$this->errorResponse(array(array('msg'=>'No collections on server')));
+		}
+		// TODO:in which collection should the query run??
+		// HARDCODED to first collection
+		if ( ($count = $this->input->post('count')) !== FALSE ) {
+			$images = $this->GIFTLib->getImageSet($collections[0], NULL, $uploadData['full_path'], intval($count));
+		} else {
+			$images = $this->GIFTLib->getImageSet($collections[0], NULL, $uploadData['full_path']);
+		}
+		if ( $images === FALSE ) {
+			$this->errorResponse($this->GIFTLib->getLastErrors());
+		}
+		$images = $this->translate_path_to_url($images);
+		$response = $this->build_response('image', $images);
+		$this->response($response, 200);
 	}
 	
 	function sessionid_get() {
@@ -111,9 +154,14 @@ class gift extends REST_Controller {
 	private function build_response($type, $items) {
 		$response = array();
 		$response['response'] = array();
-		$response['response']['session-id'] = $this->GIFTLib->getSessionId();
-		if ( !empty($type) && !empty($items) ) {
+		if ( ($sessionId = $this->GIFTLib->getSessionId()) !== FALSE ) {
+			$response['response']['session-id'] = $sessionId;
+		}
+		if ( !empty($type) ) {
 			$response['response']['type'] = $type;
+			if ( empty($items) ) {
+				$item = array();
+			}
 			$response['response']['count'] = count($items);
 			$response['response']['items'] = $items;
 		}
