@@ -14,7 +14,7 @@
 | path to your installation.
 |
 */
-$config['base_url']	= 'http://giftweb.lan/';
+$config['base_url']	= 'http://giftweb.local/';
 
 /*
 |--------------------------------------------------------------------------
