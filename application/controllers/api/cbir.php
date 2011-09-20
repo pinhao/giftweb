@@ -4,7 +4,7 @@ defined('BASEPATH') OR exit('No direct script access allowed');
 require APPPATH.'/libraries/REST_Controller.php';
 require APPPATH.'/libraries/GIFTLib.php';
 
-class cibr extends REST_Controller {
+class cbir extends REST_Controller {
 	
 	private $GIFTLib;
 	private $rootWebPath;
